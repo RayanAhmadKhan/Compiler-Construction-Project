@@ -10,6 +10,13 @@ table-driven LL(1) predictive parser.
 
 ## Build and run
 
+### Windows
+
+Run `build_and_run.bat` from this folder. It compiles the program and runs
+both required samples.
+
+### Manual command line
+
 ```text
 g++ -std=c++11 -Wall -Wextra -pedantic main.cpp -o parser
 parser SampleA_Valid.txt
@@ -30,6 +37,22 @@ Each run regenerates:
 
 `SampleA_Valid.txt` must be accepted. `SampleB_Invalid.txt` must be rejected
 and its trace must show syntax errors and recovery actions.
+
+Reference outputs from both runs are preserved in `outputs/valid/` and
+`outputs/invalid/`.
+
+## Submission checklist
+
+- [x] Updated Phase 1 punctuation set includes comma.
+- [x] `Marqazi` is reserved and ordinary identifiers require an underscore.
+- [x] `:=` and `!=` are single lexical operators.
+- [x] Final grammar is left-recursion-free and left-factored.
+- [x] FIRST, FOLLOW, and the complete table are generated in
+      `ParsingTable.txt`.
+- [x] Table construction reports zero conflicts.
+- [x] Parser uses a custom stack and table-driven expansion.
+- [x] Panic-mode SCAN/POP actions are logged.
+- [x] Valid input is accepted and invalid input is rejected.
 
 ## Grammar implementation
 
