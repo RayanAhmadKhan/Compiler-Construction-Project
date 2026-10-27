@@ -1,0 +1,6 @@
+E1 line 3 col 18: unexpected "::" in IdentList   [parser step 18]
+    expected one of: ID
+    step 18: POP IdentList
+E2 line 4 col 18: unexpected "::" in Term   [parser step 32]
+    expected one of: ID, NUM, (
+    step 32: POP Term

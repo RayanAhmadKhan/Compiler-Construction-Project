@@ -1,0 +1,6 @@
+Adadi sum_val ( Adadi first_arg , Ashriya second_arg )
+{
+Adadi first_val, total_val ::
+first_val := first_arg + 2 * 3 ::
+total_val := first_val - 1 ::
+}

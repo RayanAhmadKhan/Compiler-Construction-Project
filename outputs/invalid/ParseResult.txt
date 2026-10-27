@@ -1,0 +1,3 @@
+Result: REJECT - 2 syntax error(s), all recovered with panic mode (0 SCAN, 2 POP); the input is not accepted.
+Syntax errors: 2
+Lexical errors: 0

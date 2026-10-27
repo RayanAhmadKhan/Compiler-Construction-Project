@@ -1,0 +1,42 @@
+Step | Stack (top left) | Input | Production / Action | Error
+-----------------------------------------------------------------------
+1 | Program $ | Adadi Marqazi ( ) { Adadi ID , :: ID := NUM + :: } $ | M[Program,Adadi] = 1: Program -> Adadi ProgTail | 
+2 | Adadi ProgTail $ | Adadi Marqazi ( ) { Adadi ID , :: ID := NUM + :: } $ | match Adadi | 
+3 | ProgTail $ | Marqazi ( ) { Adadi ID , :: ID := NUM + :: } $ | M[ProgTail,Marqazi] = 6: ProgTail -> Marqazi ( ) CompStmt | 
+4 | Marqazi ( ) CompStmt $ | Marqazi ( ) { Adadi ID , :: ID := NUM + :: } $ | match Marqazi | 
+5 | ( ) CompStmt $ | ( ) { Adadi ID , :: ID := NUM + :: } $ | match ( | 
+6 | ) CompStmt $ | ) { Adadi ID , :: ID := NUM + :: } $ | match ) | 
+7 | CompStmt $ | { Adadi ID , :: ID := NUM + :: } $ | M[CompStmt,{] = 36: CompStmt -> { StmtList } | 
+8 | { StmtList } $ | { Adadi ID , :: ID := NUM + :: } $ | match { | 
+9 | StmtList } $ | Adadi ID , :: ID := NUM + :: } $ | M[StmtList,Adadi] = 37: StmtList -> Stmt StmtList | 
+10 | Stmt StmtList } $ | Adadi ID , :: ID := NUM + :: } $ | M[Stmt,Adadi] = 27: Stmt -> Declaration | 
+11 | Declaration StmtList } $ | Adadi ID , :: ID := NUM + :: } $ | M[Declaration,Adadi] = 13: Declaration -> Type IdentList :: | 
+12 | Type IdentList :: StmtList } $ | Adadi ID , :: ID := NUM + :: } $ | M[Type,Adadi] = 17: Type -> Adadi | 
+13 | Adadi IdentList :: StmtList } $ | Adadi ID , :: ID := NUM + :: } $ | match Adadi | 
+14 | IdentList :: StmtList } $ | ID , :: ID := NUM + :: } $ | M[IdentList,ID] = 14: IdentList -> ID IdentList' | 
+15 | ID IdentList' :: StmtList } $ | ID , :: ID := NUM + :: } $ | match ID | 
+16 | IdentList' :: StmtList } $ | , :: ID := NUM + :: } $ | M[IdentList',,] = 15: IdentList' -> , IdentList | 
+17 | , IdentList :: StmtList } $ | , :: ID := NUM + :: } $ | match , | 
+18 | IdentList :: StmtList } $ | :: ID := NUM + :: } $ | M[IdentList,::] empty, :: in FOLLOW(IdentList) -> POP IdentList | E1 line 3 col 18: unexpected "::" in IdentList
+19 | :: StmtList } $ | :: ID := NUM + :: } $ | match :: | 
+20 | StmtList } $ | ID := NUM + :: } $ | M[StmtList,ID] = 37: StmtList -> Stmt StmtList | 
+21 | Stmt StmtList } $ | ID := NUM + :: } $ | M[Stmt,ID] = 24: Stmt -> Expr :: | 
+22 | Expr :: StmtList } $ | ID := NUM + :: } $ | M[Expr,ID] = 39: Expr -> ID ExprRest | 
+23 | ID ExprRest :: StmtList } $ | ID := NUM + :: } $ | match ID | 
+24 | ExprRest :: StmtList } $ | := NUM + :: } $ | M[ExprRest,:=] = 42: ExprRest -> := Expr | 
+25 | := Expr :: StmtList } $ | := NUM + :: } $ | match := | 
+26 | Expr :: StmtList } $ | NUM + :: } $ | M[Expr,NUM] = 40: Expr -> NUM RvTail | 
+27 | NUM RvTail :: StmtList } $ | NUM + :: } $ | match NUM | 
+28 | RvTail :: StmtList } $ | + :: } $ | M[RvTail,+] = 44: RvTail -> Term' Mag' Rvalue' | 
+29 | Term' Mag' Rvalue' :: StmtList } $ | + :: } $ | M[Term',+] = 61: Term' -> epsilon | 
+30 | Mag' Rvalue' :: StmtList } $ | + :: } $ | M[Mag',+] = 55: Mag' -> + Term Mag' | 
+31 | + Term Mag' Rvalue' :: StmtList } $ | + :: } $ | match + | 
+32 | Term Mag' Rvalue' :: StmtList } $ | :: } $ | M[Term,::] empty, :: in FOLLOW(Term) -> POP Term | E2 line 4 col 18: unexpected "::" in Term
+33 | Mag' Rvalue' :: StmtList } $ | :: } $ | M[Mag',::] = 57: Mag' -> epsilon | 
+34 | Rvalue' :: StmtList } $ | :: } $ | M[Rvalue',::] = 46: Rvalue' -> epsilon | 
+35 | :: StmtList } $ | :: } $ | match :: | 
+36 | StmtList } $ | } $ | M[StmtList,}] = 38: StmtList -> epsilon | 
+37 | } $ | } $ | match } | 
+38 | $ | $ | accept | 
+
+Result: REJECT - 2 syntax error(s), all recovered with panic mode (0 SCAN, 2 POP); the input is not accepted.

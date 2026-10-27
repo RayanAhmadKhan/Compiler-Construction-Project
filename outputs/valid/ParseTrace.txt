@@ -1,0 +1,85 @@
+Step | Stack (top left) | Input | Production / Action | Error
+-----------------------------------------------------------------------
+1 | Program $ | Adadi ID ( Adadi ID , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[Program,Adadi] = 1: Program -> Adadi ProgTail | 
+2 | Adadi ProgTail $ | Adadi ID ( Adadi ID , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match Adadi | 
+3 | ProgTail $ | ID ( Adadi ID , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[ProgTail,ID] = 7: ProgTail -> FuncRest | 
+4 | FuncRest $ | ID ( Adadi ID , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[FuncRest,ID] = 8: FuncRest -> ID ( ArgList ) CompStmt | 
+5 | ID ( ArgList ) CompStmt $ | ID ( Adadi ID , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match ID | 
+6 | ( ArgList ) CompStmt $ | ( Adadi ID , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match ( | 
+7 | ArgList ) CompStmt $ | Adadi ID , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[ArgList,Adadi] = 9: ArgList -> Arg ArgList' | 
+8 | Arg ArgList' ) CompStmt $ | Adadi ID , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[Arg,Adadi] = 12: Arg -> Type ID | 
+9 | Type ID ArgList' ) CompStmt $ | Adadi ID , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[Type,Adadi] = 17: Type -> Adadi | 
+10 | Adadi ID ArgList' ) CompStmt $ | Adadi ID , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match Adadi | 
+11 | ID ArgList' ) CompStmt $ | ID , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match ID | 
+12 | ArgList' ) CompStmt $ | , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[ArgList',,] = 10: ArgList' -> , Arg ArgList' | 
+13 | , Arg ArgList' ) CompStmt $ | , Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match , | 
+14 | Arg ArgList' ) CompStmt $ | Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[Arg,Ashriya] = 12: Arg -> Type ID | 
+15 | Type ID ArgList' ) CompStmt $ | Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[Type,Ashriya] = 18: Type -> Ashriya | 
+16 | Ashriya ID ArgList' ) CompStmt $ | Ashriya ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match Ashriya | 
+17 | ID ArgList' ) CompStmt $ | ID ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match ID | 
+18 | ArgList' ) CompStmt $ | ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[ArgList',)] = 11: ArgList' -> epsilon | 
+19 | ) CompStmt $ | ) { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match ) | 
+20 | CompStmt $ | { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[CompStmt,{] = 36: CompStmt -> { StmtList } | 
+21 | { StmtList } $ | { Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match { | 
+22 | StmtList } $ | Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[StmtList,Adadi] = 37: StmtList -> Stmt StmtList | 
+23 | Stmt StmtList } $ | Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[Stmt,Adadi] = 27: Stmt -> Declaration | 
+24 | Declaration StmtList } $ | Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[Declaration,Adadi] = 13: Declaration -> Type IdentList :: | 
+25 | Type IdentList :: StmtList } $ | Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[Type,Adadi] = 17: Type -> Adadi | 
+26 | Adadi IdentList :: StmtList } $ | Adadi ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match Adadi | 
+27 | IdentList :: StmtList } $ | ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[IdentList,ID] = 14: IdentList -> ID IdentList' | 
+28 | ID IdentList' :: StmtList } $ | ID , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match ID | 
+29 | IdentList' :: StmtList } $ | , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[IdentList',,] = 15: IdentList' -> , IdentList | 
+30 | , IdentList :: StmtList } $ | , ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match , | 
+31 | IdentList :: StmtList } $ | ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[IdentList,ID] = 14: IdentList -> ID IdentList' | 
+32 | ID IdentList' :: StmtList } $ | ID :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match ID | 
+33 | IdentList' :: StmtList } $ | :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[IdentList',::] = 16: IdentList' -> epsilon | 
+34 | :: StmtList } $ | :: ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match :: | 
+35 | StmtList } $ | ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[StmtList,ID] = 37: StmtList -> Stmt StmtList | 
+36 | Stmt StmtList } $ | ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[Stmt,ID] = 24: Stmt -> Expr :: | 
+37 | Expr :: StmtList } $ | ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[Expr,ID] = 39: Expr -> ID ExprRest | 
+38 | ID ExprRest :: StmtList } $ | ID := ID + NUM * NUM :: ID := ID - NUM :: } $ | match ID | 
+39 | ExprRest :: StmtList } $ | := ID + NUM * NUM :: ID := ID - NUM :: } $ | M[ExprRest,:=] = 42: ExprRest -> := Expr | 
+40 | := Expr :: StmtList } $ | := ID + NUM * NUM :: ID := ID - NUM :: } $ | match := | 
+41 | Expr :: StmtList } $ | ID + NUM * NUM :: ID := ID - NUM :: } $ | M[Expr,ID] = 39: Expr -> ID ExprRest | 
+42 | ID ExprRest :: StmtList } $ | ID + NUM * NUM :: ID := ID - NUM :: } $ | match ID | 
+43 | ExprRest :: StmtList } $ | + NUM * NUM :: ID := ID - NUM :: } $ | M[ExprRest,+] = 43: ExprRest -> RvTail | 
+44 | RvTail :: StmtList } $ | + NUM * NUM :: ID := ID - NUM :: } $ | M[RvTail,+] = 44: RvTail -> Term' Mag' Rvalue' | 
+45 | Term' Mag' Rvalue' :: StmtList } $ | + NUM * NUM :: ID := ID - NUM :: } $ | M[Term',+] = 61: Term' -> epsilon | 
+46 | Mag' Rvalue' :: StmtList } $ | + NUM * NUM :: ID := ID - NUM :: } $ | M[Mag',+] = 55: Mag' -> + Term Mag' | 
+47 | + Term Mag' Rvalue' :: StmtList } $ | + NUM * NUM :: ID := ID - NUM :: } $ | match + | 
+48 | Term Mag' Rvalue' :: StmtList } $ | NUM * NUM :: ID := ID - NUM :: } $ | M[Term,NUM] = 58: Term -> Factor Term' | 
+49 | Factor Term' Mag' Rvalue' :: StmtList } $ | NUM * NUM :: ID := ID - NUM :: } $ | M[Factor,NUM] = 64: Factor -> NUM | 
+50 | NUM Term' Mag' Rvalue' :: StmtList } $ | NUM * NUM :: ID := ID - NUM :: } $ | match NUM | 
+51 | Term' Mag' Rvalue' :: StmtList } $ | * NUM :: ID := ID - NUM :: } $ | M[Term',*] = 59: Term' -> * Factor Term' | 
+52 | * Factor Term' Mag' Rvalue' :: StmtList } $ | * NUM :: ID := ID - NUM :: } $ | match * | 
+53 | Factor Term' Mag' Rvalue' :: StmtList } $ | NUM :: ID := ID - NUM :: } $ | M[Factor,NUM] = 64: Factor -> NUM | 
+54 | NUM Term' Mag' Rvalue' :: StmtList } $ | NUM :: ID := ID - NUM :: } $ | match NUM | 
+55 | Term' Mag' Rvalue' :: StmtList } $ | :: ID := ID - NUM :: } $ | M[Term',::] = 61: Term' -> epsilon | 
+56 | Mag' Rvalue' :: StmtList } $ | :: ID := ID - NUM :: } $ | M[Mag',::] = 57: Mag' -> epsilon | 
+57 | Rvalue' :: StmtList } $ | :: ID := ID - NUM :: } $ | M[Rvalue',::] = 46: Rvalue' -> epsilon | 
+58 | :: StmtList } $ | :: ID := ID - NUM :: } $ | match :: | 
+59 | StmtList } $ | ID := ID - NUM :: } $ | M[StmtList,ID] = 37: StmtList -> Stmt StmtList | 
+60 | Stmt StmtList } $ | ID := ID - NUM :: } $ | M[Stmt,ID] = 24: Stmt -> Expr :: | 
+61 | Expr :: StmtList } $ | ID := ID - NUM :: } $ | M[Expr,ID] = 39: Expr -> ID ExprRest | 
+62 | ID ExprRest :: StmtList } $ | ID := ID - NUM :: } $ | match ID | 
+63 | ExprRest :: StmtList } $ | := ID - NUM :: } $ | M[ExprRest,:=] = 42: ExprRest -> := Expr | 
+64 | := Expr :: StmtList } $ | := ID - NUM :: } $ | match := | 
+65 | Expr :: StmtList } $ | ID - NUM :: } $ | M[Expr,ID] = 39: Expr -> ID ExprRest | 
+66 | ID ExprRest :: StmtList } $ | ID - NUM :: } $ | match ID | 
+67 | ExprRest :: StmtList } $ | - NUM :: } $ | M[ExprRest,-] = 43: ExprRest -> RvTail | 
+68 | RvTail :: StmtList } $ | - NUM :: } $ | M[RvTail,-] = 44: RvTail -> Term' Mag' Rvalue' | 
+69 | Term' Mag' Rvalue' :: StmtList } $ | - NUM :: } $ | M[Term',-] = 61: Term' -> epsilon | 
+70 | Mag' Rvalue' :: StmtList } $ | - NUM :: } $ | M[Mag',-] = 56: Mag' -> - Term Mag' | 
+71 | - Term Mag' Rvalue' :: StmtList } $ | - NUM :: } $ | match - | 
+72 | Term Mag' Rvalue' :: StmtList } $ | NUM :: } $ | M[Term,NUM] = 58: Term -> Factor Term' | 
+73 | Factor Term' Mag' Rvalue' :: StmtList } $ | NUM :: } $ | M[Factor,NUM] = 64: Factor -> NUM | 
+74 | NUM Term' Mag' Rvalue' :: StmtList } $ | NUM :: } $ | match NUM | 
+75 | Term' Mag' Rvalue' :: StmtList } $ | :: } $ | M[Term',::] = 61: Term' -> epsilon | 
+76 | Mag' Rvalue' :: StmtList } $ | :: } $ | M[Mag',::] = 57: Mag' -> epsilon | 
+77 | Rvalue' :: StmtList } $ | :: } $ | M[Rvalue',::] = 46: Rvalue' -> epsilon | 
+78 | :: StmtList } $ | :: } $ | match :: | 
+79 | StmtList } $ | } $ | M[StmtList,}] = 38: StmtList -> epsilon | 
+80 | } $ | } $ | match } | 
+81 | $ | $ | accept | 
+
+Result: ACCEPT - stack and input both reduced to $ with 0 errors.

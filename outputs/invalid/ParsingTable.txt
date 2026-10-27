@@ -1,0 +1,324 @@
+=== LL(1) PRODUCTIONS (numbers used in the table) ===
+1: Program -> Adadi ProgTail
+2: Program -> Ashriya FuncRest
+3: Program -> Harf FuncRest
+4: Program -> Matn FuncRest
+5: Program -> Mantiqi FuncRest
+6: ProgTail -> Marqazi ( ) CompStmt
+7: ProgTail -> FuncRest
+8: FuncRest -> ID ( ArgList ) CompStmt
+9: ArgList -> Arg ArgList'
+10: ArgList' -> , Arg ArgList'
+11: ArgList' -> epsilon
+12: Arg -> Type ID
+13: Declaration -> Type IdentList ::
+14: IdentList -> ID IdentList'
+15: IdentList' -> , IdentList
+16: IdentList' -> epsilon
+17: Type -> Adadi
+18: Type -> Ashriya
+19: Type -> Harf
+20: Type -> Matn
+21: Type -> Mantiqi
+22: Stmt -> ForStmt
+23: Stmt -> WhileStmt
+24: Stmt -> Expr ::
+25: Stmt -> IfStmt
+26: Stmt -> CompStmt
+27: Stmt -> Declaration
+28: Stmt -> ::
+29: ForStmt -> for ( Expr :: OptExpr :: OptExpr ) Stmt
+30: OptExpr -> Expr
+31: OptExpr -> epsilon
+32: WhileStmt -> while ( Expr ) Stmt
+33: IfStmt -> Agar ( Expr ) CompStmt ElsePart
+34: ElsePart -> Wagarna CompStmt
+35: ElsePart -> epsilon
+36: CompStmt -> { StmtList }
+37: StmtList -> Stmt StmtList
+38: StmtList -> epsilon
+39: Expr -> ID ExprRest
+40: Expr -> NUM RvTail
+41: Expr -> ( Expr ) RvTail
+42: ExprRest -> := Expr
+43: ExprRest -> RvTail
+44: RvTail -> Term' Mag' Rvalue'
+45: Rvalue' -> Compare Mag Rvalue'
+46: Rvalue' -> epsilon
+47: Compare -> ==
+48: Compare -> <
+49: Compare -> >
+50: Compare -> <=
+51: Compare -> >=
+52: Compare -> !=
+53: Compare -> <>
+54: Mag -> Term Mag'
+55: Mag' -> + Term Mag'
+56: Mag' -> - Term Mag'
+57: Mag' -> epsilon
+58: Term -> Factor Term'
+59: Term' -> * Factor Term'
+60: Term' -> / Factor Term'
+61: Term' -> epsilon
+62: Factor -> ( Expr )
+63: Factor -> ID
+64: Factor -> NUM
+
+=== FIRST SETS ===
+FIRST(Program) = { Adadi, Ashriya, Harf, Matn, Mantiqi }
+FIRST(ProgTail) = { Marqazi, ID }
+FIRST(FuncRest) = { ID }
+FIRST(ArgList) = { Adadi, Ashriya, Harf, Matn, Mantiqi }
+FIRST(ArgList') = { ,, epsilon }
+FIRST(Arg) = { Adadi, Ashriya, Harf, Matn, Mantiqi }
+FIRST(Declaration) = { Adadi, Ashriya, Harf, Matn, Mantiqi }
+FIRST(IdentList) = { ID }
+FIRST(IdentList') = { ,, epsilon }
+FIRST(Type) = { Adadi, Ashriya, Harf, Matn, Mantiqi }
+FIRST(Stmt) = { Adadi, Ashriya, Harf, Matn, Mantiqi, for, while, Agar, ID, NUM, (, {, :: }
+FIRST(ForStmt) = { for }
+FIRST(OptExpr) = { ID, NUM, (, epsilon }
+FIRST(WhileStmt) = { while }
+FIRST(IfStmt) = { Agar }
+FIRST(ElsePart) = { Wagarna, epsilon }
+FIRST(CompStmt) = { { }
+FIRST(StmtList) = { Adadi, Ashriya, Harf, Matn, Mantiqi, for, while, Agar, ID, NUM, (, {, ::, epsilon }
+FIRST(Expr) = { ID, NUM, ( }
+FIRST(ExprRest) = { :=, ==, <, >, <=, >=, !=, <>, +, -, *, /, epsilon }
+FIRST(RvTail) = { ==, <, >, <=, >=, !=, <>, +, -, *, /, epsilon }
+FIRST(Rvalue') = { ==, <, >, <=, >=, !=, <>, epsilon }
+FIRST(Compare) = { ==, <, >, <=, >=, !=, <> }
+FIRST(Mag) = { ID, NUM, ( }
+FIRST(Mag') = { +, -, epsilon }
+FIRST(Term) = { ID, NUM, ( }
+FIRST(Term') = { *, /, epsilon }
+FIRST(Factor) = { ID, NUM, ( }
+
+=== FOLLOW SETS ===
+FOLLOW(Program) = { $ }
+FOLLOW(ProgTail) = { $ }
+FOLLOW(FuncRest) = { $ }
+FOLLOW(ArgList) = { ) }
+FOLLOW(ArgList') = { ) }
+FOLLOW(Arg) = { ), , }
+FOLLOW(Declaration) = { Adadi, Ashriya, Harf, Matn, Mantiqi, for, while, Agar, ID, NUM, (, {, }, :: }
+FOLLOW(IdentList) = { :: }
+FOLLOW(IdentList') = { :: }
+FOLLOW(Type) = { ID }
+FOLLOW(Stmt) = { Adadi, Ashriya, Harf, Matn, Mantiqi, for, while, Agar, ID, NUM, (, {, }, :: }
+FOLLOW(ForStmt) = { Adadi, Ashriya, Harf, Matn, Mantiqi, for, while, Agar, ID, NUM, (, {, }, :: }
+FOLLOW(OptExpr) = { ), :: }
+FOLLOW(WhileStmt) = { Adadi, Ashriya, Harf, Matn, Mantiqi, for, while, Agar, ID, NUM, (, {, }, :: }
+FOLLOW(IfStmt) = { Adadi, Ashriya, Harf, Matn, Mantiqi, for, while, Agar, ID, NUM, (, {, }, :: }
+FOLLOW(ElsePart) = { Adadi, Ashriya, Harf, Matn, Mantiqi, for, while, Agar, ID, NUM, (, {, }, :: }
+FOLLOW(CompStmt) = { Adadi, Ashriya, Harf, Matn, Mantiqi, for, while, Agar, Wagarna, ID, NUM, (, {, }, ::, $ }
+FOLLOW(StmtList) = { } }
+FOLLOW(Expr) = { ), :: }
+FOLLOW(ExprRest) = { ), :: }
+FOLLOW(RvTail) = { ), :: }
+FOLLOW(Rvalue') = { ), :: }
+FOLLOW(Compare) = { ID, NUM, ( }
+FOLLOW(Mag) = { ), ::, ==, <, >, <=, >=, !=, <> }
+FOLLOW(Mag') = { ), ::, ==, <, >, <=, >=, !=, <> }
+FOLLOW(Term) = { ), ::, ==, <, >, <=, >=, !=, <>, +, - }
+FOLLOW(Term') = { ), ::, ==, <, >, <=, >=, !=, <>, +, - }
+FOLLOW(Factor) = { ), ::, ==, <, >, <=, >=, !=, <>, +, -, *, / }
+
+=== TABLE M (n = production, Pop, Scan) ===
+M           Adadi    Ashriya  Harf     Matn     Mantiqi  Marqazi  for      while    Agar     Wagarna  ID       NUM      (        )        {        }        ,        ::       :=       ==       <        >        <=       >=       !=       <>       +        -        *        /        $        
+Program     1        2        3        4        5        Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+ProgTail    Scan     Scan     Scan     Scan     Scan     6        Scan     Scan     Scan     Scan     7        Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+FuncRest    Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     8        Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+ArgList     9        9        9        9        9        Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+ArgList'    Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     11       Scan     Scan     10       Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+Arg         12       12       12       12       12       Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      Scan     Scan     Pop      Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+Declaration 13       13       13       13       13       Scan     Pop      Pop      Pop      Scan     Pop      Pop      Pop      Scan     Pop      Pop      Scan     Pop      Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+IdentList   Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     14       Scan     Scan     Scan     Scan     Scan     Scan     Pop      Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+IdentList'  Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     15       16       Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+Type        17       18       19       20       21       Scan     Scan     Scan     Scan     Scan     Pop      Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+Stmt        27       27       27       27       27       Scan     22       23       25       Scan     24       24       24       Scan     26       Pop      Scan     28       Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+ForStmt     Pop      Pop      Pop      Pop      Pop      Scan     29       Pop      Pop      Scan     Pop      Pop      Pop      Scan     Pop      Pop      Scan     Pop      Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+OptExpr     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     30       30       30       31       Scan     Scan     Scan     31       Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+WhileStmt   Pop      Pop      Pop      Pop      Pop      Scan     Pop      32       Pop      Scan     Pop      Pop      Pop      Scan     Pop      Pop      Scan     Pop      Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+IfStmt      Pop      Pop      Pop      Pop      Pop      Scan     Pop      Pop      33       Scan     Pop      Pop      Pop      Scan     Pop      Pop      Scan     Pop      Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+ElsePart    35       35       35       35       35       Scan     35       35       35       34       35       35       35       Scan     35       35       Scan     35       Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+CompStmt    Pop      Pop      Pop      Pop      Pop      Scan     Pop      Pop      Pop      Pop      Pop      Pop      Pop      Scan     36       Pop      Scan     Pop      Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+StmtList    37       37       37       37       37       Scan     37       37       37       Scan     37       37       37       Scan     37       38       Scan     37       Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+Expr        Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     39       40       41       Pop      Scan     Scan     Scan     Pop      Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      
+ExprRest    Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     43       Scan     Scan     Scan     43       42       43       43       43       43       43       43       43       43       43       43       43       Pop      
+RvTail      Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     44       Scan     Scan     Scan     44       Scan     44       44       44       44       44       44       44       44       44       44       44       Pop      
+Rvalue'     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     46       Scan     Scan     Scan     46       Scan     45       45       45       45       45       45       45       Scan     Scan     Scan     Scan     Pop      
+Compare     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Pop      Pop      Pop      Scan     Scan     Scan     Scan     Scan     Scan     47       48       49       50       51       52       53       Scan     Scan     Scan     Scan     Pop      
+Mag         Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     54       54       54       Pop      Scan     Scan     Scan     Pop      Scan     Pop      Pop      Pop      Pop      Pop      Pop      Pop      Scan     Scan     Scan     Scan     Pop      
+Mag'        Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     57       Scan     Scan     Scan     57       Scan     57       57       57       57       57       57       57       55       56       Scan     Scan     Pop      
+Term        Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     58       58       58       Pop      Scan     Scan     Scan     Pop      Scan     Pop      Pop      Pop      Pop      Pop      Pop      Pop      Pop      Pop      Scan     Scan     Pop      
+Term'       Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     61       Scan     Scan     Scan     61       Scan     61       61       61       61       61       61       61       61       61       59       60       Pop      
+Factor      Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     Scan     63       64       62       Pop      Scan     Scan     Scan     Pop      Scan     Pop      Pop      Pop      Pop      Pop      Pop      Pop      Pop      Pop      Pop      Pop      Pop      
+(column 'other' = any token outside the grammar: Scan in every row)
+
+=== TABLE M, productions only: M[NonTerminal, Terminal] = n ===
+M[Program,Adadi] = 1: Program -> Adadi ProgTail
+M[Program,Ashriya] = 2: Program -> Ashriya FuncRest
+M[Program,Harf] = 3: Program -> Harf FuncRest
+M[Program,Matn] = 4: Program -> Matn FuncRest
+M[Program,Mantiqi] = 5: Program -> Mantiqi FuncRest
+M[ProgTail,Marqazi] = 6: ProgTail -> Marqazi ( ) CompStmt
+M[ProgTail,ID] = 7: ProgTail -> FuncRest
+M[FuncRest,ID] = 8: FuncRest -> ID ( ArgList ) CompStmt
+M[ArgList,Adadi] = 9: ArgList -> Arg ArgList'
+M[ArgList,Ashriya] = 9: ArgList -> Arg ArgList'
+M[ArgList,Harf] = 9: ArgList -> Arg ArgList'
+M[ArgList,Matn] = 9: ArgList -> Arg ArgList'
+M[ArgList,Mantiqi] = 9: ArgList -> Arg ArgList'
+M[ArgList',)] = 11: ArgList' -> epsilon
+M[ArgList',,] = 10: ArgList' -> , Arg ArgList'
+M[Arg,Adadi] = 12: Arg -> Type ID
+M[Arg,Ashriya] = 12: Arg -> Type ID
+M[Arg,Harf] = 12: Arg -> Type ID
+M[Arg,Matn] = 12: Arg -> Type ID
+M[Arg,Mantiqi] = 12: Arg -> Type ID
+M[Declaration,Adadi] = 13: Declaration -> Type IdentList ::
+M[Declaration,Ashriya] = 13: Declaration -> Type IdentList ::
+M[Declaration,Harf] = 13: Declaration -> Type IdentList ::
+M[Declaration,Matn] = 13: Declaration -> Type IdentList ::
+M[Declaration,Mantiqi] = 13: Declaration -> Type IdentList ::
+M[IdentList,ID] = 14: IdentList -> ID IdentList'
+M[IdentList',,] = 15: IdentList' -> , IdentList
+M[IdentList',::] = 16: IdentList' -> epsilon
+M[Type,Adadi] = 17: Type -> Adadi
+M[Type,Ashriya] = 18: Type -> Ashriya
+M[Type,Harf] = 19: Type -> Harf
+M[Type,Matn] = 20: Type -> Matn
+M[Type,Mantiqi] = 21: Type -> Mantiqi
+M[Stmt,Adadi] = 27: Stmt -> Declaration
+M[Stmt,Ashriya] = 27: Stmt -> Declaration
+M[Stmt,Harf] = 27: Stmt -> Declaration
+M[Stmt,Matn] = 27: Stmt -> Declaration
+M[Stmt,Mantiqi] = 27: Stmt -> Declaration
+M[Stmt,for] = 22: Stmt -> ForStmt
+M[Stmt,while] = 23: Stmt -> WhileStmt
+M[Stmt,Agar] = 25: Stmt -> IfStmt
+M[Stmt,ID] = 24: Stmt -> Expr ::
+M[Stmt,NUM] = 24: Stmt -> Expr ::
+M[Stmt,(] = 24: Stmt -> Expr ::
+M[Stmt,{] = 26: Stmt -> CompStmt
+M[Stmt,::] = 28: Stmt -> ::
+M[ForStmt,for] = 29: ForStmt -> for ( Expr :: OptExpr :: OptExpr ) Stmt
+M[OptExpr,ID] = 30: OptExpr -> Expr
+M[OptExpr,NUM] = 30: OptExpr -> Expr
+M[OptExpr,(] = 30: OptExpr -> Expr
+M[OptExpr,)] = 31: OptExpr -> epsilon
+M[OptExpr,::] = 31: OptExpr -> epsilon
+M[WhileStmt,while] = 32: WhileStmt -> while ( Expr ) Stmt
+M[IfStmt,Agar] = 33: IfStmt -> Agar ( Expr ) CompStmt ElsePart
+M[ElsePart,Adadi] = 35: ElsePart -> epsilon
+M[ElsePart,Ashriya] = 35: ElsePart -> epsilon
+M[ElsePart,Harf] = 35: ElsePart -> epsilon
+M[ElsePart,Matn] = 35: ElsePart -> epsilon
+M[ElsePart,Mantiqi] = 35: ElsePart -> epsilon
+M[ElsePart,for] = 35: ElsePart -> epsilon
+M[ElsePart,while] = 35: ElsePart -> epsilon
+M[ElsePart,Agar] = 35: ElsePart -> epsilon
+M[ElsePart,Wagarna] = 34: ElsePart -> Wagarna CompStmt
+M[ElsePart,ID] = 35: ElsePart -> epsilon
+M[ElsePart,NUM] = 35: ElsePart -> epsilon
+M[ElsePart,(] = 35: ElsePart -> epsilon
+M[ElsePart,{] = 35: ElsePart -> epsilon
+M[ElsePart,}] = 35: ElsePart -> epsilon
+M[ElsePart,::] = 35: ElsePart -> epsilon
+M[CompStmt,{] = 36: CompStmt -> { StmtList }
+M[StmtList,Adadi] = 37: StmtList -> Stmt StmtList
+M[StmtList,Ashriya] = 37: StmtList -> Stmt StmtList
+M[StmtList,Harf] = 37: StmtList -> Stmt StmtList
+M[StmtList,Matn] = 37: StmtList -> Stmt StmtList
+M[StmtList,Mantiqi] = 37: StmtList -> Stmt StmtList
+M[StmtList,for] = 37: StmtList -> Stmt StmtList
+M[StmtList,while] = 37: StmtList -> Stmt StmtList
+M[StmtList,Agar] = 37: StmtList -> Stmt StmtList
+M[StmtList,ID] = 37: StmtList -> Stmt StmtList
+M[StmtList,NUM] = 37: StmtList -> Stmt StmtList
+M[StmtList,(] = 37: StmtList -> Stmt StmtList
+M[StmtList,{] = 37: StmtList -> Stmt StmtList
+M[StmtList,}] = 38: StmtList -> epsilon
+M[StmtList,::] = 37: StmtList -> Stmt StmtList
+M[Expr,ID] = 39: Expr -> ID ExprRest
+M[Expr,NUM] = 40: Expr -> NUM RvTail
+M[Expr,(] = 41: Expr -> ( Expr ) RvTail
+M[ExprRest,)] = 43: ExprRest -> RvTail
+M[ExprRest,::] = 43: ExprRest -> RvTail
+M[ExprRest,:=] = 42: ExprRest -> := Expr
+M[ExprRest,==] = 43: ExprRest -> RvTail
+M[ExprRest,<] = 43: ExprRest -> RvTail
+M[ExprRest,>] = 43: ExprRest -> RvTail
+M[ExprRest,<=] = 43: ExprRest -> RvTail
+M[ExprRest,>=] = 43: ExprRest -> RvTail
+M[ExprRest,!=] = 43: ExprRest -> RvTail
+M[ExprRest,<>] = 43: ExprRest -> RvTail
+M[ExprRest,+] = 43: ExprRest -> RvTail
+M[ExprRest,-] = 43: ExprRest -> RvTail
+M[ExprRest,*] = 43: ExprRest -> RvTail
+M[ExprRest,/] = 43: ExprRest -> RvTail
+M[RvTail,)] = 44: RvTail -> Term' Mag' Rvalue'
+M[RvTail,::] = 44: RvTail -> Term' Mag' Rvalue'
+M[RvTail,==] = 44: RvTail -> Term' Mag' Rvalue'
+M[RvTail,<] = 44: RvTail -> Term' Mag' Rvalue'
+M[RvTail,>] = 44: RvTail -> Term' Mag' Rvalue'
+M[RvTail,<=] = 44: RvTail -> Term' Mag' Rvalue'
+M[RvTail,>=] = 44: RvTail -> Term' Mag' Rvalue'
+M[RvTail,!=] = 44: RvTail -> Term' Mag' Rvalue'
+M[RvTail,<>] = 44: RvTail -> Term' Mag' Rvalue'
+M[RvTail,+] = 44: RvTail -> Term' Mag' Rvalue'
+M[RvTail,-] = 44: RvTail -> Term' Mag' Rvalue'
+M[RvTail,*] = 44: RvTail -> Term' Mag' Rvalue'
+M[RvTail,/] = 44: RvTail -> Term' Mag' Rvalue'
+M[Rvalue',)] = 46: Rvalue' -> epsilon
+M[Rvalue',::] = 46: Rvalue' -> epsilon
+M[Rvalue',==] = 45: Rvalue' -> Compare Mag Rvalue'
+M[Rvalue',<] = 45: Rvalue' -> Compare Mag Rvalue'
+M[Rvalue',>] = 45: Rvalue' -> Compare Mag Rvalue'
+M[Rvalue',<=] = 45: Rvalue' -> Compare Mag Rvalue'
+M[Rvalue',>=] = 45: Rvalue' -> Compare Mag Rvalue'
+M[Rvalue',!=] = 45: Rvalue' -> Compare Mag Rvalue'
+M[Rvalue',<>] = 45: Rvalue' -> Compare Mag Rvalue'
+M[Compare,==] = 47: Compare -> ==
+M[Compare,<] = 48: Compare -> <
+M[Compare,>] = 49: Compare -> >
+M[Compare,<=] = 50: Compare -> <=
+M[Compare,>=] = 51: Compare -> >=
+M[Compare,!=] = 52: Compare -> !=
+M[Compare,<>] = 53: Compare -> <>
+M[Mag,ID] = 54: Mag -> Term Mag'
+M[Mag,NUM] = 54: Mag -> Term Mag'
+M[Mag,(] = 54: Mag -> Term Mag'
+M[Mag',)] = 57: Mag' -> epsilon
+M[Mag',::] = 57: Mag' -> epsilon
+M[Mag',==] = 57: Mag' -> epsilon
+M[Mag',<] = 57: Mag' -> epsilon
+M[Mag',>] = 57: Mag' -> epsilon
+M[Mag',<=] = 57: Mag' -> epsilon
+M[Mag',>=] = 57: Mag' -> epsilon
+M[Mag',!=] = 57: Mag' -> epsilon
+M[Mag',<>] = 57: Mag' -> epsilon
+M[Mag',+] = 55: Mag' -> + Term Mag'
+M[Mag',-] = 56: Mag' -> - Term Mag'
+M[Term,ID] = 58: Term -> Factor Term'
+M[Term,NUM] = 58: Term -> Factor Term'
+M[Term,(] = 58: Term -> Factor Term'
+M[Term',)] = 61: Term' -> epsilon
+M[Term',::] = 61: Term' -> epsilon
+M[Term',==] = 61: Term' -> epsilon
+M[Term',<] = 61: Term' -> epsilon
+M[Term',>] = 61: Term' -> epsilon
+M[Term',<=] = 61: Term' -> epsilon
+M[Term',>=] = 61: Term' -> epsilon
+M[Term',!=] = 61: Term' -> epsilon
+M[Term',<>] = 61: Term' -> epsilon
+M[Term',+] = 61: Term' -> epsilon
+M[Term',-] = 61: Term' -> epsilon
+M[Term',*] = 59: Term' -> * Factor Term'
+M[Term',/] = 60: Term' -> / Factor Term'
+M[Factor,ID] = 63: Factor -> ID
+M[Factor,NUM] = 64: Factor -> NUM
+M[Factor,(] = 62: Factor -> ( Expr )
+
+Table conflicts: 0  (grammar is LL(1))

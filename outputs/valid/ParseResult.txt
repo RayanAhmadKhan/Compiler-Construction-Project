@@ -1,0 +1,3 @@
+Result: ACCEPT - stack and input both reduced to $ with 0 errors.
+Syntax errors: 0
+Lexical errors: 0
