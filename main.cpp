@@ -1,24 +1,8 @@
-// ============================================================================
-//  Compiler Construction - Project Phase 1 (Lexer) + Phase 2 (LL(1) Parser)
-//
-//  Flow:  Sourcecode.txt --> table-driven lexer --> Token.txt / Error.txt
-//         Token.txt --> stack-based LL(1) predictive parser
-//                   --> ParseTrace.txt / SyntaxErrors.txt / ParseResult.txt  (+ TokenPos.txt: line/col of each token)
-//         (ParsingTable.txt = FIRST/FOLLOW/table dump, useful for the handwritten part)
-//
-//  No std::string / std::vector / std::stack are used: stack, token list and
-//  parsing-table storage are all hand-written.
-//
-//  Usage:  ./main [source_file]      (default source file: Sourcecode.txt)
-// ============================================================================
 #include <iostream>
 #include <fstream>
 
 using namespace std;
 
-// ----------------------------------------------------------------------------
-//  Small string helpers (no <cstring>)
-// ----------------------------------------------------------------------------
 int my_strlen(const char* str) {
     int len = 0;
     while (str[len] != '\0') len++;
@@ -40,10 +24,6 @@ char* my_strdup(const char* s) {
     for (int i = 0; i <= n; i++) r[i] = s[i];
     return r;
 }
-
-// ============================================================================
-//  PHASE 1 : TABLE-DRIVEN LEXER
-// ============================================================================
 
 struct LexemeBuffer {
     char* data;
@@ -135,39 +115,35 @@ CharClass get_char_class(char c) {
     if (c == '"') return CC_QUOTE;
     if (c == '<' || c == '>' || c == '=' || c == '!' || c == '*' || c == '/' || c == '%' || c == '&' || c == '|' || c == ';') return CC_OPERATOR;
     if (c == ':') return CC_COLON;
-    // PHASE 2 UPDATE: ',' (comma) added to the punctuation set
+
     if (c == '[' || c == ']' || c == '{' || c == '}' || c == '(' || c == ')' || c == ',') return CC_PUNC;
     if (c == ' ' || c == '\t' || c == '\n' || c == '\r') return CC_SPACE;
     return CC_OTHER;
 }
 
 int dfa[17][CC_COUNT] = {
-    // LTR,         E,            DIGIT,      UNDERSCORE, DOT,              PLUS_MINUS,   QUOTE,         OPERATOR, COLON,        PUNC,    SPACE,   OTHER
-    {S_ID_NO_US,   S_ID_NO_US,   S_NUM_INT,  S_ID_VALID, S_ERROR,          S_SIGN_START, S_STRING,      S_OP,     S_COLON,      S_PUNC,  S_START, S_ERROR}, // 0: START
-    {S_ID_NO_US,   S_ID_NO_US,   S_ID_NO_US, S_ID_VALID, S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},  // 1: ID_NO_US
-    {S_ID_VALID,   S_ID_VALID,   S_ID_VALID, S_ID_VALID, S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},  // 2: ID_VALID
-    {S_DONE,       S_NUM_EXP_WAIT,S_NUM_INT, S_DONE,     S_NUM_FLOAT_WAIT, S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},  // 3: NUM_INT
-    {S_DONE,       S_DONE,       S_NUM_INT,  S_DONE,     S_NUM_FLOAT_WAIT, S_OP,         S_DONE,        S_OP,     S_DONE,       S_DONE,  S_DONE,  S_DONE},  // 4: SIGN_START
-    {S_ERROR,      S_ERROR,      S_NUM_FLOAT,S_ERROR,    S_ERROR,          S_ERROR,      S_ERROR,       S_ERROR,  S_ERROR,      S_ERROR, S_ERROR, S_ERROR}, // 5: NUM_FLOAT_WAIT
-    {S_DONE,       S_NUM_EXP_WAIT,S_NUM_FLOAT,S_DONE,    S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},  // 6: NUM_FLOAT
-    {S_ERROR,      S_ERROR,      S_NUM_EXP,  S_ERROR,    S_ERROR,          S_NUM_EXP_SIGN,S_ERROR,      S_ERROR,  S_ERROR,      S_ERROR, S_ERROR, S_ERROR}, // 7: NUM_EXP_WAIT
-    {S_ERROR,      S_ERROR,      S_NUM_EXP,  S_ERROR,    S_ERROR,          S_ERROR,      S_ERROR,       S_ERROR,  S_ERROR,      S_ERROR, S_ERROR, S_ERROR}, // 8: NUM_EXP_SIGN
-    {S_DONE,       S_DONE,       S_NUM_EXP,  S_DONE,     S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},  // 9: NUM_EXP
-    {S_STRING,     S_STRING,     S_STRING,   S_STRING,   S_STRING,         S_STRING,     S_STRING_DONE, S_STRING, S_STRING,     S_STRING,S_STRING,S_STRING},// 10: STRING
-    {S_DONE,       S_DONE,       S_DONE,     S_DONE,     S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},  // 11: STRING_DONE
-    {S_DONE,       S_DONE,       S_DONE,     S_DONE,     S_DONE,           S_OP,         S_DONE,        S_OP,     S_DONE,       S_DONE,  S_DONE,  S_DONE},  // 12: OP
-    {S_DONE,       S_DONE,       S_DONE,     S_DONE,     S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_COLON_DONE, S_DONE,  S_DONE,  S_DONE},  // 13: COLON
-    {S_DONE,       S_DONE,       S_DONE,     S_DONE,     S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},  // 14: COLON_DONE
-    {S_DONE,       S_DONE,       S_DONE,     S_DONE,     S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},  // 15: PUNC
-    {S_DONE,       S_DONE,       S_DONE,     S_DONE,     S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE}   // 16: ERROR
+
+    {S_ID_NO_US,   S_ID_NO_US,   S_NUM_INT,  S_ID_VALID, S_ERROR,          S_SIGN_START, S_STRING,      S_OP,     S_COLON,      S_PUNC,  S_START, S_ERROR},
+    {S_ID_NO_US,   S_ID_NO_US,   S_ID_NO_US, S_ID_VALID, S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},
+    {S_ID_VALID,   S_ID_VALID,   S_ID_VALID, S_ID_VALID, S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},
+    {S_DONE,       S_NUM_EXP_WAIT,S_NUM_INT, S_DONE,     S_NUM_FLOAT_WAIT, S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},
+    {S_DONE,       S_DONE,       S_NUM_INT,  S_DONE,     S_NUM_FLOAT_WAIT, S_OP,         S_DONE,        S_OP,     S_DONE,       S_DONE,  S_DONE,  S_DONE},
+    {S_ERROR,      S_ERROR,      S_NUM_FLOAT,S_ERROR,    S_ERROR,          S_ERROR,      S_ERROR,       S_ERROR,  S_ERROR,      S_ERROR, S_ERROR, S_ERROR},
+    {S_DONE,       S_NUM_EXP_WAIT,S_NUM_FLOAT,S_DONE,    S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},
+    {S_ERROR,      S_ERROR,      S_NUM_EXP,  S_ERROR,    S_ERROR,          S_NUM_EXP_SIGN,S_ERROR,      S_ERROR,  S_ERROR,      S_ERROR, S_ERROR, S_ERROR},
+    {S_ERROR,      S_ERROR,      S_NUM_EXP,  S_ERROR,    S_ERROR,          S_ERROR,      S_ERROR,       S_ERROR,  S_ERROR,      S_ERROR, S_ERROR, S_ERROR},
+    {S_DONE,       S_DONE,       S_NUM_EXP,  S_DONE,     S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},
+    {S_STRING,     S_STRING,     S_STRING,   S_STRING,   S_STRING,         S_STRING,     S_STRING_DONE, S_STRING, S_STRING,     S_STRING,S_STRING,S_STRING},
+    {S_DONE,       S_DONE,       S_DONE,     S_DONE,     S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},
+    {S_DONE,       S_DONE,       S_DONE,     S_DONE,     S_DONE,           S_OP,         S_DONE,        S_OP,     S_DONE,       S_DONE,  S_DONE,  S_DONE},
+    {S_DONE,       S_DONE,       S_DONE,     S_DONE,     S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_COLON_DONE, S_DONE,  S_DONE,  S_DONE},
+    {S_DONE,       S_DONE,       S_DONE,     S_DONE,     S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},
+    {S_DONE,       S_DONE,       S_DONE,     S_DONE,     S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE},
+    {S_DONE,       S_DONE,       S_DONE,     S_DONE,     S_DONE,           S_DONE,       S_DONE,        S_DONE,   S_DONE,       S_DONE,  S_DONE,  S_DONE}
 };
 
-// Counts every lexical error written to Error.txt.
 #define LEXERR (++lexErrors, errFile)
 
-// ---- line / column tracking (needed for "line L col C" in syntax errors) ----
-// Token.txt keeps the Phase 1 format "< KIND, lexeme >". The start position of
-// every token is written, in the same order, to TokenPos.txt as "line col".
 int gLine = 1, gCol = 0;
 int histLine[16], histCol[16], histN = 0;
 
@@ -193,7 +169,6 @@ void emitTok(ofstream& tok, ofstream& pos, const char* kind, const char* lex, in
 }
 #define EMIT(K) emitTok(tokFile, posFile, K, lexeme.data, tokLine, tokCol)
 
-// Returns 0 on success, 1 if the source file cannot be opened.
 int runLexer(const char* sourcePath, int& lexErrors) {
     ifstream inFile(sourcePath);
     ofstream tokFile("Token.txt");
@@ -218,9 +193,9 @@ int runLexer(const char* sourcePath, int& lexErrors) {
 
         if (nextState == S_DONE) {
             bool consumedCurrentCharacter = false;
-            // Process the completed token based on the LAST valid state
+
             if (currentState == S_ID_NO_US) {
-                // The arrow keywords are recognized with the delimiter already read.
+
                 if ((my_strcmp(lexeme.data, "input") && c == '-') ||
                     (my_strcmp(lexeme.data, "output") && c == '<')) {
                     char second = '\0';
@@ -234,7 +209,7 @@ int runLexer(const char* sourcePath, int& lexErrors) {
                         inFile.clear();
                         if (got) unreadCh(inFile, second);
                         LEXERR << "Lexical Error (Invalid arrow keyword): " << lexeme.data << c << "\n";
-                        // c itself is put back once, at the bottom of this block
+
                     }
                 } else if (is_keyword(lexeme.data)) {
                     EMIT("KEYWORD");
@@ -244,7 +219,7 @@ int runLexer(const char* sourcePath, int& lexErrors) {
             }
             else if (currentState == S_ID_VALID) { EMIT("IDENTIFIER"); }
             else if (currentState == S_NUM_INT || currentState == S_SIGN_START) {
-                // SIGN_START means it was just a '+' or '-' without digits
+
                 if (currentState == S_SIGN_START) EMIT("OPERATOR");
                 else EMIT("INTEGER");
             }
@@ -270,14 +245,13 @@ int runLexer(const char* sourcePath, int& lexErrors) {
                 LEXERR << "Lexical Error (Malformed token): " << lexeme.data << "\n";
             }
 
-            // Reset and reprocess the current character for the next token
             lexeme.clear();
             currentState = S_START;
             if (!consumedCurrentCharacter) unreadCh(inFile, c);
         }
         else {
-            // Valid transition: append character and move state
-            if (nextState != S_START || cc != CC_SPACE) { // Don't append leading whitespace
+
+            if (nextState != S_START || cc != CC_SPACE) {
                 if (lexeme.length == 0) { tokLine = gLine; tokCol = gCol; }
                 lexeme.append(c);
             }
@@ -285,7 +259,6 @@ int runLexer(const char* sourcePath, int& lexErrors) {
         }
     }
 
-    // Handle EOF if a token was left in the buffer
     if (lexeme.length > 0) {
         if (currentState == S_ID_VALID) EMIT("IDENTIFIER");
         else if (currentState == S_ID_NO_US && is_keyword(lexeme.data)) EMIT("KEYWORD");
@@ -310,54 +283,6 @@ int runLexer(const char* sourcePath, int& lexErrors) {
     return 0;
 }
 
-// ============================================================================
-//  PHASE 2 : LL(1) PREDICTIVE PARSER   (matches the handwritten solution)
-// ============================================================================
-//
-//  FINAL LL(1) GRAMMAR (Part B).  Production numbers are used in the parsing
-//  table (Part E) and in the traces (Part F).  eps = epsilon.
-//
-//    1 Program   -> Adadi ProgTail          23 Stmt     -> WhileStmt
-//    2 Program   -> Ashriya FuncRest        24 Stmt     -> Expr ::
-//    3 Program   -> Harf FuncRest           25 Stmt     -> IfStmt
-//    4 Program   -> Matn FuncRest           26 Stmt     -> CompStmt
-//    5 Program   -> Mantiqi FuncRest        27 Stmt     -> Declaration
-//    6 ProgTail  -> Marqazi ( ) CompStmt    28 Stmt     -> ::
-//    7 ProgTail  -> FuncRest                29 ForStmt  -> for ( Expr :: OptExpr :: OptExpr ) Stmt
-//    8 FuncRest  -> ID ( ArgList ) CompStmt 30 OptExpr  -> Expr
-//    9 ArgList   -> Arg ArgList'            31 OptExpr  -> eps
-//   10 ArgList'  -> , Arg ArgList'          32 WhileStmt-> while ( Expr ) Stmt
-//   11 ArgList'  -> eps                     33 IfStmt   -> Agar ( Expr ) CompStmt ElsePart
-//   12 Arg       -> Type ID                 34 ElsePart -> Wagarna CompStmt
-//   13 Declaration -> Type IdentList ::     35 ElsePart -> eps
-//   14 IdentList -> ID IdentList'           36 CompStmt -> { StmtList }
-//   15 IdentList'-> , IdentList             37 StmtList -> Stmt StmtList
-//   16 IdentList'-> eps                     38 StmtList -> eps
-//   17-21 Type -> Adadi|Ashriya|Harf|Matn|Mantiqi
-//   22 Stmt      -> ForStmt
-//   39 Expr     -> ID ExprRest              54 Mag      -> Term Mag'
-//   40 Expr     -> NUM RvTail               55 Mag'     -> + Term Mag'
-//   41 Expr     -> ( Expr ) RvTail          56 Mag'     -> - Term Mag'
-//   42 ExprRest -> := Expr                  57 Mag'     -> eps
-//   43 ExprRest -> RvTail                   58 Term     -> Factor Term'
-//   44 RvTail   -> Term' Mag' Rvalue'       59 Term'    -> * Factor Term'
-//   45 Rvalue'  -> Compare Mag Rvalue'      60 Term'    -> / Factor Term'
-//   46 Rvalue'  -> eps                      61 Term'    -> eps
-//   47-53 Compare -> == | < | > | <= | >= | != | <>
-//   62 Factor   -> ( Expr )    63 Factor -> ID    64 Factor -> NUM
-//
-//  Terminals: Adadi Ashriya Harf Matn Mantiqi Marqazi for while Agar Wagarna
-//             ID NUM ( ) { } , :: := == < > <= >= != <> + - * /  $
-//  (any other token of Phase 1 is mapped to "other" and is always SCANned)
-//
-//  Table M[A,a]: production number if a in FIRST(alpha) (or FOLLOW(A) when
-//  alpha is nullable); otherwise POP when a in FOLLOW(A) or a = $, else SCAN.
-//  The table is generated from the production list below (FIRST/FOLLOW are
-//  computed in code) and is written to ParsingTable.txt in the same layout
-//  as Part E of the handwritten solution.
-// ----------------------------------------------------------------------------
-
-// Grammar symbols: terminals first (0..T_COUNT-1), then nonterminals.
 enum Sym {
     T_ADADI = 0, T_ASHRIYA, T_HARF, T_MATN, T_MANTIQI, T_MARQAZI,
     T_FOR, T_WHILE, T_AGAR, T_WAGARNA,
@@ -365,8 +290,8 @@ enum Sym {
     T_LPAREN, T_RPAREN, T_LBRACE, T_RBRACE, T_COMMA, T_DCOLON, T_ASSIGN,
     T_EQ, T_LT, T_GT, T_LE, T_GE, T_NE, T_DIAMOND,
     T_PLUS, T_MINUS, T_STAR, T_SLASH,
-    T_END,       // '$' end marker
-    T_UNKNOWN,   // "other": any token that is not part of the Phase 2 grammar
+    T_END,
+    T_UNKNOWN,
     T_COUNT,
 
     N_PROGRAM = T_COUNT, N_PROGTAIL, N_FUNCREST, N_ARGLIST, N_ARGLISTP, N_ARG,
@@ -392,85 +317,83 @@ const char* symNames[SYM_COUNT] = {
 
 struct Prod {
     int lhs;
-    int len;      // 0 for an epsilon production
+    int len;
     int rhs[10];
 };
 
-// Index = production number (1..64). Entry 0 is an unused placeholder.
 const Prod prods[] = {
-    /* 0*/ {0, 0, {}},
-    /* 1*/ {N_PROGRAM, 2, {T_ADADI, N_PROGTAIL}},
-    /* 2*/ {N_PROGRAM, 2, {T_ASHRIYA, N_FUNCREST}},
-    /* 3*/ {N_PROGRAM, 2, {T_HARF, N_FUNCREST}},
-    /* 4*/ {N_PROGRAM, 2, {T_MATN, N_FUNCREST}},
-    /* 5*/ {N_PROGRAM, 2, {T_MANTIQI, N_FUNCREST}},
-    /* 6*/ {N_PROGTAIL, 4, {T_MARQAZI, T_LPAREN, T_RPAREN, N_COMP}},
-    /* 7*/ {N_PROGTAIL, 1, {N_FUNCREST}},
-    /* 8*/ {N_FUNCREST, 5, {T_ID, T_LPAREN, N_ARGLIST, T_RPAREN, N_COMP}},
-    /* 9*/ {N_ARGLIST, 2, {N_ARG, N_ARGLISTP}},
-    /*10*/ {N_ARGLISTP, 3, {T_COMMA, N_ARG, N_ARGLISTP}},
-    /*11*/ {N_ARGLISTP, 0, {}},
-    /*12*/ {N_ARG, 2, {N_TYPE, T_ID}},
-    /*13*/ {N_DECL, 3, {N_TYPE, N_IDENTLIST, T_DCOLON}},
-    /*14*/ {N_IDENTLIST, 2, {T_ID, N_IDENTLISTP}},
-    /*15*/ {N_IDENTLISTP, 2, {T_COMMA, N_IDENTLIST}},
-    /*16*/ {N_IDENTLISTP, 0, {}},
-    /*17*/ {N_TYPE, 1, {T_ADADI}},
-    /*18*/ {N_TYPE, 1, {T_ASHRIYA}},
-    /*19*/ {N_TYPE, 1, {T_HARF}},
-    /*20*/ {N_TYPE, 1, {T_MATN}},
-    /*21*/ {N_TYPE, 1, {T_MANTIQI}},
-    /*22*/ {N_STMT, 1, {N_FOR}},
-    /*23*/ {N_STMT, 1, {N_WHILE}},
-    /*24*/ {N_STMT, 2, {N_EXPR, T_DCOLON}},
-    /*25*/ {N_STMT, 1, {N_IF}},
-    /*26*/ {N_STMT, 1, {N_COMP}},
-    /*27*/ {N_STMT, 1, {N_DECL}},
-    /*28*/ {N_STMT, 1, {T_DCOLON}},
-    /*29*/ {N_FOR, 9, {T_FOR, T_LPAREN, N_EXPR, T_DCOLON, N_OPTEXPR, T_DCOLON, N_OPTEXPR, T_RPAREN, N_STMT}},
-    /*30*/ {N_OPTEXPR, 1, {N_EXPR}},
-    /*31*/ {N_OPTEXPR, 0, {}},
-    /*32*/ {N_WHILE, 5, {T_WHILE, T_LPAREN, N_EXPR, T_RPAREN, N_STMT}},
-    /*33*/ {N_IF, 6, {T_AGAR, T_LPAREN, N_EXPR, T_RPAREN, N_COMP, N_ELSE}},
-    /*34*/ {N_ELSE, 2, {T_WAGARNA, N_COMP}},
-    /*35*/ {N_ELSE, 0, {}},
-    /*36*/ {N_COMP, 3, {T_LBRACE, N_STMTLIST, T_RBRACE}},
-    /*37*/ {N_STMTLIST, 2, {N_STMT, N_STMTLIST}},
-    /*38*/ {N_STMTLIST, 0, {}},
-    /*39*/ {N_EXPR, 2, {T_ID, N_EXPRREST}},
-    /*40*/ {N_EXPR, 2, {T_NUM, N_RVTAIL}},
-    /*41*/ {N_EXPR, 4, {T_LPAREN, N_EXPR, T_RPAREN, N_RVTAIL}},
-    /*42*/ {N_EXPRREST, 2, {T_ASSIGN, N_EXPR}},
-    /*43*/ {N_EXPRREST, 1, {N_RVTAIL}},
-    /*44*/ {N_RVTAIL, 3, {N_TERMP, N_MAGP, N_RVALUEP}},
-    /*45*/ {N_RVALUEP, 3, {N_COMPARE, N_MAG, N_RVALUEP}},
-    /*46*/ {N_RVALUEP, 0, {}},
-    /*47*/ {N_COMPARE, 1, {T_EQ}},
-    /*48*/ {N_COMPARE, 1, {T_LT}},
-    /*49*/ {N_COMPARE, 1, {T_GT}},
-    /*50*/ {N_COMPARE, 1, {T_LE}},
-    /*51*/ {N_COMPARE, 1, {T_GE}},
-    /*52*/ {N_COMPARE, 1, {T_NE}},
-    /*53*/ {N_COMPARE, 1, {T_DIAMOND}},
-    /*54*/ {N_MAG, 2, {N_TERM, N_MAGP}},
-    /*55*/ {N_MAGP, 3, {T_PLUS, N_TERM, N_MAGP}},
-    /*56*/ {N_MAGP, 3, {T_MINUS, N_TERM, N_MAGP}},
-    /*57*/ {N_MAGP, 0, {}},
-    /*58*/ {N_TERM, 2, {N_FACTOR, N_TERMP}},
-    /*59*/ {N_TERMP, 3, {T_STAR, N_FACTOR, N_TERMP}},
-    /*60*/ {N_TERMP, 3, {T_SLASH, N_FACTOR, N_TERMP}},
-    /*61*/ {N_TERMP, 0, {}},
-    /*62*/ {N_FACTOR, 3, {T_LPAREN, N_EXPR, T_RPAREN}},
-    /*63*/ {N_FACTOR, 1, {T_ID}},
-    /*64*/ {N_FACTOR, 1, {T_NUM}}
+     {0, 0, {}},
+     {N_PROGRAM, 2, {T_ADADI, N_PROGTAIL}},
+     {N_PROGRAM, 2, {T_ASHRIYA, N_FUNCREST}},
+     {N_PROGRAM, 2, {T_HARF, N_FUNCREST}},
+     {N_PROGRAM, 2, {T_MATN, N_FUNCREST}},
+     {N_PROGRAM, 2, {T_MANTIQI, N_FUNCREST}},
+     {N_PROGTAIL, 4, {T_MARQAZI, T_LPAREN, T_RPAREN, N_COMP}},
+     {N_PROGTAIL, 1, {N_FUNCREST}},
+     {N_FUNCREST, 5, {T_ID, T_LPAREN, N_ARGLIST, T_RPAREN, N_COMP}},
+     {N_ARGLIST, 2, {N_ARG, N_ARGLISTP}},
+     {N_ARGLISTP, 3, {T_COMMA, N_ARG, N_ARGLISTP}},
+     {N_ARGLISTP, 0, {}},
+     {N_ARG, 2, {N_TYPE, T_ID}},
+     {N_DECL, 3, {N_TYPE, N_IDENTLIST, T_DCOLON}},
+     {N_IDENTLIST, 2, {T_ID, N_IDENTLISTP}},
+     {N_IDENTLISTP, 2, {T_COMMA, N_IDENTLIST}},
+     {N_IDENTLISTP, 0, {}},
+     {N_TYPE, 1, {T_ADADI}},
+     {N_TYPE, 1, {T_ASHRIYA}},
+     {N_TYPE, 1, {T_HARF}},
+     {N_TYPE, 1, {T_MATN}},
+     {N_TYPE, 1, {T_MANTIQI}},
+     {N_STMT, 1, {N_FOR}},
+     {N_STMT, 1, {N_WHILE}},
+     {N_STMT, 2, {N_EXPR, T_DCOLON}},
+     {N_STMT, 1, {N_IF}},
+     {N_STMT, 1, {N_COMP}},
+     {N_STMT, 1, {N_DECL}},
+     {N_STMT, 1, {T_DCOLON}},
+     {N_FOR, 9, {T_FOR, T_LPAREN, N_EXPR, T_DCOLON, N_OPTEXPR, T_DCOLON, N_OPTEXPR, T_RPAREN, N_STMT}},
+     {N_OPTEXPR, 1, {N_EXPR}},
+     {N_OPTEXPR, 0, {}},
+     {N_WHILE, 5, {T_WHILE, T_LPAREN, N_EXPR, T_RPAREN, N_STMT}},
+     {N_IF, 6, {T_AGAR, T_LPAREN, N_EXPR, T_RPAREN, N_COMP, N_ELSE}},
+     {N_ELSE, 2, {T_WAGARNA, N_COMP}},
+     {N_ELSE, 0, {}},
+     {N_COMP, 3, {T_LBRACE, N_STMTLIST, T_RBRACE}},
+     {N_STMTLIST, 2, {N_STMT, N_STMTLIST}},
+     {N_STMTLIST, 0, {}},
+     {N_EXPR, 2, {T_ID, N_EXPRREST}},
+     {N_EXPR, 2, {T_NUM, N_RVTAIL}},
+     {N_EXPR, 4, {T_LPAREN, N_EXPR, T_RPAREN, N_RVTAIL}},
+     {N_EXPRREST, 2, {T_ASSIGN, N_EXPR}},
+     {N_EXPRREST, 1, {N_RVTAIL}},
+     {N_RVTAIL, 3, {N_TERMP, N_MAGP, N_RVALUEP}},
+     {N_RVALUEP, 3, {N_COMPARE, N_MAG, N_RVALUEP}},
+     {N_RVALUEP, 0, {}},
+     {N_COMPARE, 1, {T_EQ}},
+     {N_COMPARE, 1, {T_LT}},
+     {N_COMPARE, 1, {T_GT}},
+     {N_COMPARE, 1, {T_LE}},
+     {N_COMPARE, 1, {T_GE}},
+     {N_COMPARE, 1, {T_NE}},
+     {N_COMPARE, 1, {T_DIAMOND}},
+     {N_MAG, 2, {N_TERM, N_MAGP}},
+     {N_MAGP, 3, {T_PLUS, N_TERM, N_MAGP}},
+     {N_MAGP, 3, {T_MINUS, N_TERM, N_MAGP}},
+     {N_MAGP, 0, {}},
+     {N_TERM, 2, {N_FACTOR, N_TERMP}},
+     {N_TERMP, 3, {T_STAR, N_FACTOR, N_TERMP}},
+     {N_TERMP, 3, {T_SLASH, N_FACTOR, N_TERMP}},
+     {N_TERMP, 0, {}},
+     {N_FACTOR, 3, {T_LPAREN, N_EXPR, T_RPAREN}},
+     {N_FACTOR, 1, {T_ID}},
+     {N_FACTOR, 1, {T_NUM}}
 };
-const int NUM_PRODS = sizeof(prods) / sizeof(prods[0]);   // 65 (incl. placeholder)
+const int NUM_PRODS = sizeof(prods) / sizeof(prods[0]);
 
-// ---- FIRST / FOLLOW / parsing table storage (plain arrays) -----------------
 bool nullable[SYM_COUNT];
 bool firstSet[SYM_COUNT][T_COUNT];
 bool followSet[SYM_COUNT][T_COUNT];
-int  parseTable[SYM_COUNT][T_COUNT];   // production number, or -1 (error box: Pop / Scan)
+int  parseTable[SYM_COUNT][T_COUNT];
 
 bool isTerminal(int s) { return s < T_COUNT; }
 
@@ -483,7 +406,6 @@ void writeProd(ostream& os, int p) {
     }
 }
 
-// FIRST of the right-hand side of production p, and whether the whole rhs is nullable.
 void firstOfRhs(int p, bool out[T_COUNT], bool& rhsNullable) {
     for (int t = 0; t < T_COUNT; t++) out[t] = false;
     rhsNullable = true;
@@ -494,7 +416,6 @@ void firstOfRhs(int p, bool out[T_COUNT], bool& rhsNullable) {
     }
 }
 
-// Computes nullable, FIRST, FOLLOW and the LL(1) table. Returns number of table conflicts.
 int buildParserTables() {
     for (int s = 0; s < SYM_COUNT; s++) {
         nullable[s] = false;
@@ -503,7 +424,7 @@ int buildParserTables() {
     for (int t = 0; t < T_COUNT; t++) firstSet[t][t] = true;
 
     bool changed = true;
-    while (changed) {                                   // nullable
+    while (changed) {
         changed = false;
         for (int p = 1; p < NUM_PRODS; p++) {
             if (nullable[prods[p].lhs]) continue;
@@ -514,7 +435,7 @@ int buildParserTables() {
     }
 
     changed = true;
-    while (changed) {                                   // FIRST
+    while (changed) {
         changed = false;
         for (int p = 1; p < NUM_PRODS; p++) {
             int A = prods[p].lhs;
@@ -527,7 +448,7 @@ int buildParserTables() {
         }
     }
 
-    followSet[N_PROGRAM][T_END] = true;                 // FOLLOW
+    followSet[N_PROGRAM][T_END] = true;
     changed = true;
     while (changed) {
         changed = false;
@@ -551,7 +472,7 @@ int buildParserTables() {
         }
     }
 
-    int conflicts = 0;                                  // parsing table
+    int conflicts = 0;
     for (int p = 1; p < NUM_PRODS; p++) {
         bool f[T_COUNT];
         bool rhsNullable;
@@ -567,10 +488,8 @@ int buildParserTables() {
     return conflicts;
 }
 
-// An empty box is POP when the terminal is in FOLLOW(A) (or is $), otherwise SCAN.
 bool isPopBox(int A, int t) { return followSet[A][t] || t == T_END; }
 
-// Writes productions, FIRST, FOLLOW and Table M (same layout as Part E) to ParsingTable.txt
 void dumpTables(int conflicts) {
     ofstream out("ParsingTable.txt");
     out << "=== LL(1) PRODUCTIONS (numbers used in the table) ===\n";
@@ -623,10 +542,9 @@ void dumpTables(int conflicts) {
     out.close();
 }
 
-// ---- custom stack ------------------------------------------------------------
 struct Stack {
     int* data;
-    int top;       // index of top element, -1 when empty
+    int top;
     int capacity;
 
     Stack() { capacity = 32; top = -1; data = new int[capacity]; }
@@ -646,12 +564,11 @@ struct Stack {
     int peek() const { return data[top]; }
 };
 
-// ---- token list (custom dynamic array) --------------------------------------
 struct Token {
-    int term;        // grammar terminal
-    char* kind;      // lexer token class (KEYWORD, IDENTIFIER, ...)
-    char* lexeme;    // lexeme text
-    int line;        // start position in the source (0 = unknown)
+    int term;
+    char* kind;
+    char* lexeme;
+    int line;
     int col;
 };
 
@@ -695,7 +612,6 @@ const LexMap lexMap[] = {
 };
 const int NUM_LEXMAP = sizeof(lexMap) / sizeof(lexMap[0]);
 
-// Token-to-terminal mapping (Phase 1 token class -> grammar terminal)
 int mapToken(const char* kind, const char* lexeme) {
     if (my_strcmp(kind, "IDENTIFIER")) return T_ID;
     if (my_strcmp(kind, "INTEGER") || my_strcmp(kind, "FLOAT") || my_strcmp(kind, "EXPONENTIAL")) return T_NUM;
@@ -703,10 +619,9 @@ int mapToken(const char* kind, const char* lexeme) {
         for (int i = 0; i < NUM_LEXMAP; i++)
             if (my_strcmp(lexeme, lexMap[i].text)) return lexMap[i].term;
     }
-    return T_UNKNOWN;   // other keywords (Wapas, True ...), [ ], ++ += << ..., quoted literals
+    return T_UNKNOWN;
 }
 
-// Reads Token.txt ("< KIND, lexeme >") plus TokenPos.txt ("line col"), appends '$'.
 bool loadTokens(const char* path, const char* posPath) {
     ifstream in(path);
     if (!in.is_open()) return false;
@@ -736,7 +651,6 @@ bool loadTokens(const char* path, const char* posPath) {
     return true;
 }
 
-// ---- trace / error output helpers --------------------------------------------
 void writeStack(ostream& os, const Stack& st) {
     for (int i = st.top; i >= 0; i--) {
         os << symNames[st.data[i]];
@@ -744,7 +658,6 @@ void writeStack(ostream& os, const Stack& st) {
     }
 }
 
-// Input column: terminal names (ID, NUM, ...); tokens outside the grammar show their lexeme.
 void writeInput(ostream& os, int pos) {
     for (int i = pos; i < numToks; i++) {
         if (toks[i].term == T_UNKNOWN) os << toks[i].lexeme;
@@ -764,7 +677,6 @@ void writeLoc(ostream& os, int pos) {
     else os << "token #" << (pos + 1);
 }
 
-// kind 0: empty table box, 1: terminal mismatch, 2: input left after the end of the program
 void writeShortError(ostream& os, int errNo, int kind, int X, int pos) {
     os << "E" << errNo << " ";
     writeLoc(os, pos);
@@ -774,7 +686,6 @@ void writeShortError(ostream& os, int errNo, int kind, int X, int pos) {
     else { os << "unexpected "; writeTokText(os, pos); os << " after the end of the program"; }
 }
 
-// SyntaxErrors.txt entry: short message + (for table errors) the expected set.
 void logError(ostream& os, int errNo, int step, int kind, int X, int pos) {
     writeShortError(os, errNo, kind, X, pos);
     os << "   [parser step " << step << "]\n";
@@ -806,13 +717,13 @@ int runParser(int lexErrors) {
     st.push(N_PROGRAM);
 
     int pos = 0, step = 0, synErrors = 0, scans = 0, pops = 0;
-    bool recovering = false;     // true from an error until the next successful terminal match
+    bool recovering = false;
 
     while (true) {
         int X = st.peek();
         int a = toks[pos].term;
         int errPos = pos;
-        int errKind = -1;        // set when a NEW error is recorded in this step
+        int errKind = -1;
         step++;
 
         trace << step << " | ";
@@ -889,7 +800,6 @@ int runParser(int lexErrors) {
 
     if (synErrors == 0) synFile << "No syntax errors found.\n";
 
-    // Result line (trace file and ParseResult.txt)
     trace << "\n";
     resFile << "";
     if (accepted) {
