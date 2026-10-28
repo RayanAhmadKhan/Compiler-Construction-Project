@@ -3,6 +3,14 @@
 This submission contains the Phase 1 table-driven lexer and the Phase 2
 table-driven LL(1) predictive parser.
 
+## Project description
+
+This project implements a C++11 table-driven lexer and LL(1) predictive
+parser. It tokenizes the source program, generates FIRST and FOLLOW sets and
+the parsing table, traces parser-stack actions, reports invalid input, and
+uses panic-mode `SCAN`/`POP` recovery. Phase 2 demonstration documentation is
+available in [`Phase2Docs/`](Phase2Docs/README.md).
+
 ## Requirements
 
 - A C++11 compiler such as `g++`
